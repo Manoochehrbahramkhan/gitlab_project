@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+  type: NodePort
+  selector:
+    app: webapp
+  ports:
+    - name: http
+      port: 8888
+      targetPort: 8888
+      nodePort: 32088
+      protocol: TCP

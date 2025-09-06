@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  labels:
+    app: webapp
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+        portal-backend: "true"
+    spec:
+      containers:
+        - name: webapp
+          image: 
+          ports:
+            - containerPort: 8888
+          envFrom:
+            - configMapRef:
+                name: config 
+            - secretRef:
+                name: webapp
+          volumeMounts:
+            - name: log-dir
+              mountPath: /var/log/custom-logs/
+          
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: 8888
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: 8888
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+      volumes:
+        - name: log-dir
+          hostPath:
+            path: /var/log/custom-logs/
+            type: DirectoryOrCreate
+
