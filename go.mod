@@ -3,7 +3,6 @@ module github.com/gieart87/gotoko
 go 1.22
 
 require (
-	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
@@ -20,6 +19,7 @@ require (
 )
 
 require (
+	github.com/bxcodec/faker/v3 v3.8.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
