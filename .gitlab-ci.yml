@@ -28,10 +28,10 @@ build:
     - name: registery.atlasdtco.com/docker:24.0.2-dind
       alias: docker
   before_script:
-    - echo "🔐 Logging in to private Docker Registry..."
+    - echo "Logging in to private Docker Registry..."
     - echo "$DOCKER_PASSWORD" | docker login "$REGISTRY" -u "$DOCKER_USERNAME" --password-stdin
   script:
-    - echo "🐳 Building Docker image..."
+    - echo "Building Docker image..."
     - mkdir -p go/pkg/mod
     - go mod download
     - docker build -t $IMAGE_NAME:$IMAGE_TAG --target scratch-runtime . 
@@ -50,23 +50,12 @@ build:
 # ---------------------------
 test:
   stage: test
-  image: registery.atlasdtco.com/golang:1.24
+  trigger:
+    include: test-pipeline.yml
+    strategy: depend
   only:
-    - develop
+    - dev
     - main
-  before_script:
-    - echo "🚀 Running tests..."
-  script:
-    - curl -LO https://github.com/your-repo/test-script.sh
-    - chmod +x test-script.sh
-    - ./test-script.sh
-  cache:
-    key: "go-mod-cache"
-    paths:
-      - go/pkg/mod
-      - $GOPATH/pkg/mod
-  tags:
-    - golang
 
 # ---------------------------
 # 3) Deploy to Dev Cluster (Auto Deploy on Dev)
@@ -77,13 +66,13 @@ deploy-dev:
     - develop
   image: quay.io/helmpack/kube-applier:v0.14.0
   before_script:
-    - echo "$KUBE_CONFIG_DEV" > kubeconfig.yaml
+    - echo "$KUBE_CONFIG_DEV" | bas64 -d > kubeconfig.yaml
     - export KUBECONFIG=$PWD/kubeconfig.yaml
     - git fetch origin develop
     - git checkout develop
     - git pull origin develop
   script:
-    - echo "🚀 Deploying to Dev Cluster..."
+    - echo "Deploying to Dev Cluster..."
     - kubectl apply -f manifest/deployment.yaml
     - kubectl apply -f manifest/service.yaml
     - kubectl apply -f manifest/ingress.yaml
@@ -100,13 +89,13 @@ deploy-main:
     - tags
   image: quay.io/helmpack/kube-applier:v0.14.0
   before_script:
-    - echo "$KUBE_CONFIG_MAIN" > kubeconfig.yaml
+    - echo "$KUBE_CONFIG_MAIN" | bas64 -d > kubeconfig.yaml
     - export KUBECONFIG=$PWD/kubeconfig.yaml
     - git fetch origin main
     - git checkout main
     - git pull origin main
   script:
-    - echo "🚀 Deploying to Main Cluster..."
+    - echo "Deploying to Main Cluster..."
     - kubectl apply -f manifest/deployment.yaml
     - kubectl apply -f manifest/service.yaml
     - kubectl apply -f manifest/ingress.yaml
