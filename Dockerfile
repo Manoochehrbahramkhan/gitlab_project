@@ -1,8 +1,7 @@
 ############################
 # Stage 1: Build
 ############################
-FROM repo.atlasdtco.com/repository/docker-host/golang:1.24.4 AS builder
-
+FROM registery.atlasdtco.com/golang:1.24
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -15,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o portal .
 ############################
 # Stage 2: Alpine Runtime
 ############################
-FROM repo.atlasdtco.com/repository/docker-host/alpine:3.22 AS alpine-runtime
+FROM registery.atlasdtco.com/alpine:3.22 AS alpine-runtime
 
 WORKDIR /app
 
