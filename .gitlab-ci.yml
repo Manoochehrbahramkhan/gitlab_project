@@ -1,8 +1,7 @@
 stages:
   - build
   - test
-  - deploy-dev
-  - deploy-main
+  - deploy
 
 variables:
   IMAGE_NAME: "registery.atlasdtco.com/webapp"
@@ -16,32 +15,30 @@ variables:
   DOCKER_PASSWORD: "$CI_REGISTRY_PASSWORD"
 
 # ---------------------------
-# 1) Build Docker Image
+# 1) Build & Push Docker Image
 # ---------------------------
 build:
   stage: build
-  only:
-    - develop
-    - main
-  image: registery.atlasdtco.com/golang:1.24
+  image: registery.atlasdtco.com/docker:24.0.2
   services:
-    - name: registery.atlasdtco.com/docker:24.0.2-dind
+    - name: docker:24.0.2-dind
       alias: docker
   before_script:
     - echo "Logging in to private Docker Registry..."
     - echo "$DOCKER_PASSWORD" | docker login "$REGISTRY" -u "$DOCKER_USERNAME" --password-stdin
   script:
-    - echo "Building Docker image..."
-    - mkdir -p go/pkg/mod
-    - go mod download
-    - docker build -t $IMAGE_NAME:$IMAGE_TAG --target scratch-runtime . 
-    - echo "📤 Pushing Docker image to private registry..."
+    - echo " Building Docker image..."
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG --target scratch-runtime .
+    - echo "Pushing Docker image to private registry..."
     - docker push $IMAGE_NAME:$IMAGE_TAG
   cache:
     key: "go-mod-cache"
     paths:
       - go/pkg/mod
       - $GOPATH/pkg/mod
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"'
+      when: always
   tags:
     - golang
 
@@ -53,52 +50,36 @@ test:
   trigger:
     include: test-pipeline.yml
     strategy: depend
-  only:
-    - dev
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"'
+      when: always
 
 # ---------------------------
-# 3) Deploy to Dev Cluster (Auto Deploy on Dev)
+# 3) Deploy Stage
 # ---------------------------
-deploy-dev:
-  stage: deploy-dev
-  only:
-    - develop
-  image: quay.io/helmpack/kube-applier:v0.14.0
+deploy:
+  stage: deploy
+  image: registery.atlasdtco.com/kubectl:v1.0.0
   before_script:
-    - echo "$KUBE_CONFIG_DEV" | bas64 -d > kubeconfig.yaml
+    - mkdir -p ~/.kube
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "dev" ]]; then
+        echo "$KUBE_CONFIG_DEV" | base64 -d > kubeconfig.yaml
+      elif [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
+        echo "$KUBE_CONFIG_MAIN" | base64 -d > kubeconfig.yaml
+      fi
+    - chmod 600 kubeconfig.yaml
     - export KUBECONFIG=$PWD/kubeconfig.yaml
-    - git fetch origin develop
-    - git checkout develop
-    - git pull origin develop
   script:
-    - echo "Deploying to Dev Cluster..."
-    - kubectl apply -f manifest/deployment.yaml
+    - echo " Deploying image $IMAGE_NAME:$IMAGE_TAG to cluster..."
+    - sed "s|IMAGE_PLACEHOLDER|$IMAGE_NAME:$IMAGE_TAG|g" manifest/deployment.yaml | kubectl apply -f -
     - kubectl apply -f manifest/service.yaml
-    - kubectl apply -f manifest/ingress.yaml
-  tags:
-    - golang
-
-# ---------------------------
-# 4) Deploy to Main Cluster (Manual Deploy on Main or Tag)
-# ---------------------------
-deploy-main:
-  stage: deploy-main
-  only:
-    - main
-    - tags
-  image: quay.io/helmpack/kube-applier:v0.14.0
-  before_script:
-    - echo "$KUBE_CONFIG_MAIN" | bas64 -d > kubeconfig.yaml
-    - export KUBECONFIG=$PWD/kubeconfig.yaml
-    - git fetch origin main
-    - git checkout main
-    - git pull origin main
-  script:
-    - echo "Deploying to Main Cluster..."
-    - kubectl apply -f manifest/deployment.yaml
-    - kubectl apply -f manifest/service.yaml
-    - kubectl apply -f manifest/ingress.yaml
-  when: manual
+    - kubectl apply -f manifest/configmap.yaml
+    - kubectl rollout status deployment/webapp --timeout=120s || (kubectl describe deployment webapp && exit 1)
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_TAG'
+      when: manual
   tags:
     - golang
