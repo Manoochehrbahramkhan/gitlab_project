@@ -1,0 +1,12 @@
+stages:
+  - test
+
+test_job:
+  stage: test
+  image: golang:1.24
+  script:
+    - echo " Running tests from external file..."
+    - go mod download
+    - go test ./...
+  tags:
+    - golang
