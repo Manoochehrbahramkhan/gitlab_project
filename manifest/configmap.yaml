@@ -7,6 +7,9 @@ data:
   APP_NAME: "GoTokoApp"
   APP_ENV: "development"
   APP_PORT: "9000"
-  DB_HOST: "db"
-  DB_NAME: "mydatabase"
+  DB_HOST: "192.168.1.50"
+  DB_NAME: "webaapp"
   DB_PORT: "5432"
+  DB_user: "webapp"
+  DB_PASSWORD: "webapp"
+
