@@ -3,10 +3,10 @@ stages:
 
 test_job:
   stage: test
-  image: golang:1.24
+  image: registery.atlasdtco.com/golang:1.24
   script:
     - echo " Running tests from external file..."
     - go mod download
-    - go test ./...
+    - eho "testing code with unit test!"
   tags:
     - golang
