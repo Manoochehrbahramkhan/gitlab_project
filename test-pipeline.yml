@@ -3,7 +3,7 @@ stages:
 
 test_job:
   stage: test
-  image: registery.atlasdtco.com/golang:1.24
+  image: registery.atlasdtco.com/golang:24.0.2-dind
   script:
     - echo " Running tests from external file..."
     - go mod download
