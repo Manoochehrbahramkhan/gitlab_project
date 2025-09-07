@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: 
+          image: IMAGE_PLACEHOLDER
           ports:
             - containerPort: 8888
           envFrom:
