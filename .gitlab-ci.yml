@@ -34,7 +34,7 @@ build:
     - echo "🐳 Building Docker image..."
     - mkdir -p go/pkg/mod
     - go mod download
-    - ocker build -t $IMAGE_NAME:$IMAGE_TAG --target scratch-runtime . 
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG --target scratch-runtime . 
     - echo "📤 Pushing Docker image to private registry..."
     - docker push $IMAGE_NAME:$IMAGE_TAG
   cache:
