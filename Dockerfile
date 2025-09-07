@@ -1,7 +1,7 @@
 ############################
 # Stage 1: Build
 ############################
-FROM registery.atlasdtco.com/golang:1.24
+FROM registery.atlasdtco.com/golang:1.24 AS builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
