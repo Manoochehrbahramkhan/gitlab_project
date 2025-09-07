@@ -27,9 +27,7 @@ spec:
             - containerPort: 8888
           envFrom:
             - configMapRef:
-                name: config 
-            - secretRef:
-                name: webapp
+                name: gotoko-config
           volumeMounts:
             - name: log-dir
               mountPath: /var/log/custom-logs/
@@ -41,28 +39,6 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
-
-          livenessProbe:
-            httpGet:
-              path: /health-check
-              port: 8888
-              scheme: HTTP
-            initialDelaySeconds: 10
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 3
-            successThreshold: 1
-
-          readinessProbe:
-            httpGet:
-              path: /health-check
-              port: 8888
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-            successThreshold: 1
 
       volumes:
         - name: log-dir
