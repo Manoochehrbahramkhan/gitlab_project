@@ -19,7 +19,7 @@ variables:
 # ---------------------------
 build:
   stage: build
-  image: registery.atlasdtco.com/docker:24.0.2
+  image: registery.atlasdtco.com/docker:24.0.2-dind
   services:
     - name: docker:24.0.2-dind
       alias: docker
