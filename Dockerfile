@@ -19,6 +19,7 @@ FROM registery.atlasdtco.com/alpine:3.22 AS alpine-runtime
 WORKDIR /app
 
 COPY --from=builder /app/portal .
+COPY .env .
 COPY templates ./templates
 COPY assets ./assets
 
@@ -39,6 +40,7 @@ FROM scratch AS scratch-runtime
 WORKDIR /app
 
 COPY --from=builder /app/portal .
+COPY .env .
 COPY templates ./templates
 COPY assets ./assets
 
