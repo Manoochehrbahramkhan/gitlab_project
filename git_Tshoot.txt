@@ -12,3 +12,6 @@ git gc ----> garbage collector
 
 # how to see change between head and main repo
 git log main..HEAD --oneline
+
+
+git cat-file -t {HASH_COMMIT} ---------> to see tree or commit
