@@ -1,0 +1,14 @@
+# if one branch dekete do this :
+
+git reflog --all
+git log --all --oneline --decorate --graph
+git fsck --full --no-reflogs --unreachable
+git show  --stat {commit}
+git switch -c feature/payment origin/feature/payment
+
+git branch -r
+
+git gc ----> garbage collector
+
+# how to see change between head and main repo
+git log main..HEAD --oneline
